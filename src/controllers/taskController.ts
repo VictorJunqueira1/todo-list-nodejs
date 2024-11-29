@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 import { createTask, updateTask, deleteTask, getAllTasks } from '../services/taskService';
 
-// Adicionar uma nova tarefa
 export const addTask = async (req: Request, res: Response): Promise<void> => {
     try {
         const task = await createTask({ ...req.body, user: req.body.userId });
@@ -11,7 +10,6 @@ export const addTask = async (req: Request, res: Response): Promise<void> => {
     }
 };
 
-// Atualizar o status de uma tarefa
 export const updateTaskStatus = async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
     const { status } = req.body;
@@ -28,7 +26,6 @@ export const updateTaskStatus = async (req: Request, res: Response): Promise<voi
     }
 };
 
-// Remover uma tarefa
 export const removeTask = async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
 
@@ -44,7 +41,6 @@ export const removeTask = async (req: Request, res: Response): Promise<void> => 
     }
 };
 
-// Listar todas as tarefas
 export const listTasks = async (req: Request, res: Response): Promise<void> => {
     try {
         const tasks = await getAllTasks();
