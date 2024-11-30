@@ -1,22 +1,18 @@
-import { Task } from '../models/taskModel';
+import { Task, ITask } from '../models/taskModel';
 
-export const createTask = async (taskData: any): Promise<any> => {
+export const createTask = async (taskData: Partial<ITask>): Promise<ITask> => {
     const task = new Task(taskData);
-    await task.save();
-    return task;
+    return task.save();
 };
 
-export const getAllTasks = async (): Promise<any[]> => {
-    const tasks = await Task.find();
-    return tasks;
+export const getAllTasks = async (userId: string): Promise<ITask[]> => {
+    return Task.find({ user: userId }).sort({ createdAt: -1 });
 };
 
-export const updateTask = async (id: string, updateData: any): Promise<any | null> => {
-    const task = await Task.findByIdAndUpdate(id, updateData, { new: true });
-    return task;
+export const updateTask = async (id: string, updates: Partial<ITask>, userId: string): Promise<ITask | null> => {
+    return Task.findOneAndUpdate({ _id: id, user: userId }, updates, { new: true });
 };
 
-export const deleteTask = async (id: string): Promise<any | null> => {
-    const task = await Task.findByIdAndDelete(id);
-    return task;
+export const deleteTask = async (id: string, userId: string): Promise<ITask | null> => {
+    return Task.findOneAndDelete({ _id: id, user: userId });
 };

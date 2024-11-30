@@ -6,7 +6,7 @@ export interface ITask extends Document {
     status: 'pending' | 'completed';
     createdAt: Date;
     updatedAt: Date;
-    user: string; 
+    user: string;
 }
 
 const taskSchema = new Schema<ITask>({
