@@ -12,8 +12,8 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
     try {
         const decoded: any = jwt.verify(token, process.env.JWT_SECRET as string);
 
-        const isValid = await redisService.get<{ token: string }>(`auth:${decoded.id}`);
-        if (!isValid || isValid.token !== token) {
+        const cachedData = await redisService.get<{ token: string }>(`auth:${decoded.id}`);
+        if (!cachedData || cachedData.token !== token) {
             res.status(401).json({ message: 'Token inválido ou expirado' });
             return;
         }
