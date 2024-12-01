@@ -10,9 +10,9 @@ export const getAllTasks = async (userId: string): Promise<ITask[]> => {
 };
 
 export const updateTask = async (id: string, updates: Partial<ITask>, userId: string): Promise<ITask | null> => {
-    return Task.findOneAndUpdate({ _id: id, user: userId }, updates, { new: true });
+    return Task.findOneAndUpdate({ id: id, user: userId }, updates, { new: true });
 };
 
 export const deleteTask = async (id: string, userId: string): Promise<ITask | null> => {
-    return Task.findOneAndDelete({ _id: id, user: userId });
+    return Task.findOneAndDelete({ id: id, user: userId });
 };
