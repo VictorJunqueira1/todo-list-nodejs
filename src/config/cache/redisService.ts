@@ -3,11 +3,7 @@ import { redisClient } from './redisClient';
 export class RedisService {
     async set(key: string, value: any, ttl?: number): Promise<void> {
         const serializedValue = JSON.stringify(value);
-        if (ttl) {
-            await redisClient.setex(key, ttl, serializedValue);
-        } else {
-            await redisClient.set(key, serializedValue);
-        }
+        !ttl ? await redisClient.set(key, serializedValue) : await redisClient.setex(key, ttl, serializedValue)
     }
 
     async get<T>(key: string): Promise<T | null> {

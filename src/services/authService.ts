@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { User } from '../models/userModel';
-import { redisService } from '../cache/redisService';
+import { redisService } from '../config/cache/redisService';
 
 export const login = async (username: string, password: string): Promise<string> => {
     const user = await User.findOne({ username });

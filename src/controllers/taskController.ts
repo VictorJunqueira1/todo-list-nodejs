@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { createTask, getAllTasks, updateTask, deleteTask } from '../services/taskService';
-import { redisService } from '../cache/redisService';
+import { redisService } from '../config/cache/redisService';
 
 export const addTask = async (req: Request, res: Response): Promise<void> => {
     try {

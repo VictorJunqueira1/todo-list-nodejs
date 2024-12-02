@@ -1,6 +1,12 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { redisService } from '../cache/redisService';
+import { redisService } from '../config/cache/redisService';
+
+interface JwtPayload {
+    id: string;
+    iat: number;
+    exp: number;
+}
 
 export const authenticate = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const token = req.headers.authorization?.split(' ')[1];
@@ -10,7 +16,7 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
     }
 
     try {
-        const decoded: any = jwt.verify(token, process.env.JWT_SECRET as string);
+        const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as JwtPayload;
 
         const cachedData = await redisService.get<{ token: string }>(`auth:${decoded.id}`);
         if (!cachedData || cachedData.token !== token) {
