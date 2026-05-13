@@ -2,6 +2,13 @@ import jwt from 'jsonwebtoken';
 import { User } from '../models/userModel';
 import { redisService } from '../config/cache/redisService';
 import { AppError } from '../errors/AppError';
+import { env } from '../config/env';
+
+type JwtPayload = {
+    id: string;
+    iat: number;
+    exp: number;
+};
 
 export const login = async (username: string, password: string): Promise<string> => {
     const user = await User.findOne({ username });
@@ -12,13 +19,21 @@ export const login = async (username: string, password: string): Promise<string>
 
     const token = jwt.sign(
         { id: user._id },
-        process.env.JWT_SECRET as string,
+        env.JWT_SECRET,
         { expiresIn: '1h' }
     );
 
     await redisService.set(`auth:${user._id}`, { token }, 3600);
 
     return token;
+};
+
+export const verifyAccessToken = (token: string): JwtPayload => {
+    try {
+        return jwt.verify(token, env.JWT_SECRET) as JwtPayload;
+    } catch {
+        throw new AppError('Token inválido', 401);
+    }
 };
 
 export const validateAccess = async (userId: string, token: string): Promise<boolean> => {
