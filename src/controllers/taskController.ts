@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { createTask, getAllTasks, updateTask, deleteTask } from '../services/taskService';
 import { redisService } from '../config/cache/redisService';
+import { created, internalServerError, notFound, ok } from '../utils/apiResponse';
 
 export const addTask = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -8,10 +9,10 @@ export const addTask = async (req: Request, res: Response): Promise<void> => {
 
         await redisService.delete(`tasks:${req.body.userId}`);
 
-        res.status(201).json(task);
+        created(res, 'Tarefa criada com sucesso', task);
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Erro ao criar a tarefa' });
+        internalServerError(res, 'Erro ao criar a tarefa');
     }
 };
 
@@ -21,7 +22,7 @@ export const listTasks = async (req: Request, res: Response): Promise<void> => {
 
         const cachedTasks = await redisService.get(cacheKey);
         if (cachedTasks) {
-            res.status(200).json(cachedTasks);
+            ok(res, 'Tarefas listadas com sucesso', cachedTasks);
             return;
         }
 
@@ -29,10 +30,10 @@ export const listTasks = async (req: Request, res: Response): Promise<void> => {
 
         await redisService.set(cacheKey, tasks, 300);
 
-        res.status(200).json(tasks);
+        ok(res, 'Tarefas listadas com sucesso', tasks);
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Erro ao listar tarefas' });
+        internalServerError(res, 'Erro ao listar tarefas');
     }
 };
 
@@ -47,16 +48,16 @@ export const editTask = async (
         const task = await updateTask(id, updates, userId);
 
         if (!task) {
-            res.status(404).json({ message: 'Tarefa não encontrada ou não autorizada' });
+            notFound(res, 'Tarefa não encontrada ou não autorizada');
             return;
         }
 
         await redisService.delete(`tasks:${userId}`);
 
-        res.status(200).json(task);
+        ok(res, 'Tarefa atualizada com sucesso', task);
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Erro ao atualizar a tarefa' });
+        internalServerError(res, 'Erro ao atualizar a tarefa');
     }
 };
 
@@ -71,15 +72,15 @@ export const removeTask = async (
         const task = await deleteTask(id, userId);
 
         if (!task) {
-            res.status(404).json({ message: 'Tarefa não encontrada ou não autorizada' });
+            notFound(res, 'Tarefa não encontrada ou não autorizada');
             return;
         }
 
         await redisService.delete(`tasks:${userId}`);
 
-        res.status(200).json({ message: 'Tarefa excluída com sucesso' });
+        ok(res, 'Tarefa excluída com sucesso');
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Erro ao excluir a tarefa' });
+        internalServerError(res, 'Erro ao excluir a tarefa');
     }
 };

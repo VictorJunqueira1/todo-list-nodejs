@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { redisService } from '../config/cache/redisService';
+import { unauthorized } from '../utils/apiResponse';
 
 interface JwtPayload {
     id: string;
@@ -10,8 +11,9 @@ interface JwtPayload {
 
 export const authenticate = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const token = req.headers.authorization?.split(' ')[1];
+
     if (!token) {
-        res.status(401).json({ message: 'Token não fornecido' });
+        unauthorized(res, 'Token não fornecido');
         return;
     }
 
@@ -20,7 +22,7 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
 
         const cachedData = await redisService.get<{ token: string }>(`auth:${decoded.id}`);
         if (!cachedData || cachedData.token !== token) {
-            res.status(401).json({ message: 'Token inválido ou expirado' });
+            unauthorized(res, 'Token inválido ou expirado');
             return;
         }
 
@@ -28,6 +30,6 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
         next();
     } catch (error) {
         console.error(error);
-        res.status(401).json({ message: 'Token inválido' });
+        unauthorized(res, 'Token inválido');
     }
 };
