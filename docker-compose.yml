@@ -1,0 +1,22 @@
+services:
+  mongodb:
+    image: mongo:7
+    container_name: todo-list-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - todo_list_mongodb_data:/data/db
+
+  redis:
+    image: redis:7-alpine
+    container_name: todo-list-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - todo_list_redis_data:/data
+
+volumes:
+  todo_list_mongodb_data:
+  todo_list_redis_data:
