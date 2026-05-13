@@ -1,86 +1,41 @@
 import { Request, Response } from 'express';
-import { createTask, getAllTasks, updateTask, deleteTask } from '../services/taskService';
-import { redisService } from '../config/cache/redisService';
-import { created, internalServerError, notFound, ok } from '../utils/apiResponse';
+import { createTask, deleteTask, getAllTasks, updateTask } from '../services/taskService';
+import { sendSuccess } from '../utils/apiResponse';
+
+type TaskParams = {
+    id: string;
+};
 
 export const addTask = async (req: Request, res: Response): Promise<void> => {
-    try {
-        const task = await createTask({ ...req.body, user: req.body.userId });
+    const task = await createTask(req.body.userId, req.body);
 
-        await redisService.delete(`tasks:${req.body.userId}`);
-
-        created(res, 'Tarefa criada com sucesso', task);
-    } catch (error) {
-        console.error(error);
-        internalServerError(res, 'Erro ao criar a tarefa');
-    }
+    sendSuccess(res, 201, 'Tarefa criada com sucesso', task);
 };
 
 export const listTasks = async (req: Request, res: Response): Promise<void> => {
-    try {
-        const cacheKey = `tasks:${req.body.userId}`;
+    const tasks = await getAllTasks(req.body.userId);
 
-        const cachedTasks = await redisService.get(cacheKey);
-        if (cachedTasks) {
-            ok(res, 'Tarefas listadas com sucesso', cachedTasks);
-            return;
-        }
-
-        const tasks = await getAllTasks(req.body.userId);
-
-        await redisService.set(cacheKey, tasks, 300);
-
-        ok(res, 'Tarefas listadas com sucesso', tasks);
-    } catch (error) {
-        console.error(error);
-        internalServerError(res, 'Erro ao listar tarefas');
-    }
+    sendSuccess(res, 200, 'Tarefas listadas com sucesso', tasks);
 };
 
 export const editTask = async (
-    req: Request<{ id: string }>,
+    req: Request<TaskParams>,
     res: Response
 ): Promise<void> => {
-    try {
-        const { id } = req.params;
-        const { userId, user, createdAt, updatedAt, ...updates } = req.body;
+    const { id } = req.params;
 
-        const task = await updateTask(id, updates, userId);
+    const task = await updateTask(id, req.body, req.body.userId);
 
-        if (!task) {
-            notFound(res, 'Tarefa não encontrada ou não autorizada');
-            return;
-        }
-
-        await redisService.delete(`tasks:${userId}`);
-
-        ok(res, 'Tarefa atualizada com sucesso', task);
-    } catch (error) {
-        console.error(error);
-        internalServerError(res, 'Erro ao atualizar a tarefa');
-    }
+    sendSuccess(res, 200, 'Tarefa atualizada com sucesso', task);
 };
 
 export const removeTask = async (
-    req: Request<{ id: string }>,
+    req: Request<TaskParams>,
     res: Response
 ): Promise<void> => {
-    try {
-        const { id } = req.params;
-        const { userId } = req.body;
+    const { id } = req.params;
 
-        const task = await deleteTask(id, userId);
+    await deleteTask(id, req.body.userId);
 
-        if (!task) {
-            notFound(res, 'Tarefa não encontrada ou não autorizada');
-            return;
-        }
-
-        await redisService.delete(`tasks:${userId}`);
-
-        ok(res, 'Tarefa excluída com sucesso');
-    } catch (error) {
-        console.error(error);
-        internalServerError(res, 'Erro ao excluir a tarefa');
-    }
+    sendSuccess(res, 200, 'Tarefa excluída com sucesso');
 };

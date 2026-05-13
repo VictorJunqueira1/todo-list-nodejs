@@ -1,37 +1,19 @@
 import { Request, Response } from 'express';
-import { login } from '../services/authService';
-import { User } from '../models/userModel';
-import { badRequest, created, internalServerError, ok } from '../utils/apiResponse';
+import { login, register } from '../services/authService';
+import { sendSuccess } from '../utils/apiResponse';
 
 export const loginUser = async (req: Request, res: Response): Promise<void> => {
-    try {
-        const { username, password } = req.body;
+    const { username, password } = req.body;
 
-        const token = await login(username, password);
+    const token = await login(username, password);
 
-        ok(res, 'Login realizado com sucesso', { token });
-    } catch (error) {
-        console.error(error);
-        badRequest(res, 'Credenciais inválidas');
-    }
+    sendSuccess(res, 200, 'Login realizado com sucesso', { token });
 };
 
 export const registerUser = async (req: Request, res: Response): Promise<void> => {
-    try {
-        const { username, password } = req.body;
+    const { username, password } = req.body;
 
-        const existingUser = await User.findOne({ username });
-        if (existingUser) {
-            badRequest(res, 'Usuário já existe');
-            return;
-        }
+    await register(username, password);
 
-        const newUser = new User({ username, password });
-        await newUser.save();
-
-        created(res, 'Usuário registrado com sucesso');
-    } catch (error) {
-        console.error(error);
-        internalServerError(res, 'Erro ao registrar usuário');
-    }
+    sendSuccess(res, 201, 'Usuário registrado com sucesso');
 };
