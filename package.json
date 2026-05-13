@@ -1,8 +1,9 @@
 {
   "name": "api-todo-list-nodejs",
   "version": "1.0.0",
-  "main": "server.ts",
+  "main": "dist/server.js",
   "scripts": {
+    "dev": "tsx watch src/server.ts",
     "build": "tsc",
     "start": "cross-env node dist/server.js"
   },
